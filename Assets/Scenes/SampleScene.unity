@@ -464,6 +464,12 @@ MonoBehaviour:
   yaw: 0
   altitude: 0
   position: {x: 0, y: 0, z: 0}
+  motorRpm:
+  - 0
+  - 0
+  - 0
+  - 0
+  posxyz: {x: 0, y: 0, z: 0}
 --- !u!65 &1590228414
 BoxCollider:
   m_ObjectHideFlags: 0

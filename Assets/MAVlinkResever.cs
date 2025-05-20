@@ -22,6 +22,9 @@ public class MAVlinkResever: MonoBehaviour
     public float altitude; // Высота (метры)
     public Vector3 position; // GPS-позиция (latitude, longitude, altitude)
 
+    public double[] motorRpm = new double[4];
+    public Vector3 posxyz;
+
     void Start()
     {
         mavlinkParser = new MavlinkParse();
@@ -96,6 +99,40 @@ public class MAVlinkResever: MonoBehaviour
                 Debug.Log($"Heartbeat: Type={(MAV_TYPE)heartbeat.type}, Mode={(MAV_MODE)heartbeat.base_mode}");
                 break;
 
+            case (uint)36: 
+                var escTelemetry = (mavlink_servo_output_raw_t)msg.data;
+                // Обновите данные для 4 моторов (зависит от реализации автопилота)
+                motorRpm[0] = (escTelemetry.servo1_raw-1000)/1000.0; // Motor 1
+                motorRpm[1] = (escTelemetry.servo2_raw-1000)/1000.0; // Motor 2
+                motorRpm[2] = (escTelemetry.servo3_raw-1000)/1000.0; // Motor 3
+                motorRpm[3] = (escTelemetry.servo4_raw-1000)/1000.0; // Motor 4
+                Debug.Log($"Motor RPM: {motorRpm[0]}, {motorRpm[1]}, {motorRpm[2]}, {motorRpm[3]}");
+                break;
+
+            case (uint)32: 
+                var pos = (mavlink_local_position_ned_t)msg.data;
+                // Обновите данные для 4 моторов (зависит от реализации автопилота)
+                posxyz = new Vector3(
+                    pos.x,  
+                    -pos.z,  
+                    pos.y
+                );
+                Debug.Log($"x: {pos.x}, y: {-pos.z}, z: {pos.y}");
+                break;
+
+            case (uint)116: 
+                var test = (mavlink_scaled_imu2_t)msg.data;
+                Debug.Log($"{test.xmag}, {test.zmag}, {test.ymag}");
+                break;
+
+            case (uint)136:
+                var test2 = (mavlink_terrain_report_t)msg.data;
+                Debug.Log($"{test2.terrain_height}");
+                break;
+
+            default:
+                //Debug.Log($"id {msg.msgid} {msg.data}");
+                break;
             // Добавьте другие сообщения по необходимости
         }
     }
@@ -108,5 +145,6 @@ public class MAVlinkResever: MonoBehaviour
             yaw * Mathf.Rad2Deg,
             -roll * Mathf.Rad2Deg
         );
+        transform.position = posxyz;
     }
 }
